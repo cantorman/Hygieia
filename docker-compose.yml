@@ -1,19 +1,25 @@
 # Help: rename the adject docker-compose.override.example.yml file to docker-compose.override.yml
 #       then in the override file uncomment the environment tag for the collectors you want to
 #       run. Then add the environment vars you want to use.
-version: '3'
+version: '3.5'
 services:
   db:
     image: mongo:latest
+    hostname: db
+    container_name: db
     ports:
       - "27017:27017"
     volumes:
-      - "db-data:/data/db"
+      - "./db-data:/data/db"
+    networks:
+      - proxynet
 
   db-setup:
     build: db
     depends_on:
       - db
+    networks:
+      - proxynet
 
   api:
     build: api
@@ -22,6 +28,8 @@ services:
       - db-setup
     ports:
       - "8080:8080"
+    networks:
+      - proxynet
 
   api-audit:
     build: api-audit
@@ -30,6 +38,8 @@ services:
       - db-setup
     ports:
       - "8081:8080"
+    networks:
+      - proxynet
 
   ui:
     build: UI
@@ -37,7 +47,7 @@ services:
     depends_on:
       - api
     ports:
-      - "3000:80"
+      - "4000:80"
 
   appdynamics-collector:
     build: collectors/performance/appdynamics
